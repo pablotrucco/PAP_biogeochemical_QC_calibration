@@ -71,7 +71,7 @@ function cruise_struct = adjust_salinity_profiles(cruise_struct, brob1,brob2,plo
             xlabel('Practical salinity ');
             ylabel('Pressure');
             title(subStructNames{i}, 'Interpreter', 'none');
-            legend('Primary sensor', 'Seconday sensor', 'Mean adjusted salinity','Autosal','Location','northeastoutside')
+            legend('Primary sensor', 'Secondary sensor', 'Mean adjusted salinity','Autosal','Location','northeastoutside')
             ax=gca;
             ax.FontSize=16;
             ax.XLim=[min(cruise_struct.(currentSubStruct).SAL_MEAN) max(cruise_struct.(currentSubStruct).SAL_MEAN)];
