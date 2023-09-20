@@ -1,0 +1,99 @@
+function varName = import_O2_winkler(workbookFile, sheetName, dataLines)
+%import_O2_winkler Import data from a spreadsheet
+%  T = import_O2_winkler(FILE) reads data from the first worksheet
+%  in the Microsoft Excel spreadsheet file named FILE.  Returns the data
+%  as a table.
+%
+%  T = import_O2_winkler(FILE, SHEET) reads from the specified
+%  worksheet.
+%
+%  T = import_O2_winkler(FILE, SHEET, DATALINES) reads from the
+%  specified worksheet for the specified row interval(s). Specify
+%  DATALINES as a positive scalar integer or a N-by-2 array of positive
+%  scalar integers for dis-contiguous row intervals.
+%
+%  Example:
+%  T = import_O2_winkler("/Volumes/SERPENT Hur/JC231/Bottle_oxygen/metadata_submission_templates_2022_bottle oxygen_JC231.xlsx", "(2b) Sample", [48, 217]);
+%   *****WARNING*******
+%   THIS FUNCTION ASSUMES THAT THE STRUCTURE OF THE .xlsx FILE WONT CHANGE 
+%   LIKE THE INFO OF THE NAME OF THE CRUISE WOULD BE STORED IN THE A2 CELL
+%   OF THE FILE
+%  See also READTABLE.
+%
+
+%% Input handling
+
+% If no sheet is specified, read first sheet
+if nargin == 1 || isempty(sheetName)
+    sheetName='(2b) Sample';
+end
+
+% If row start and end points are not specified, define defaults
+if nargin <= 2
+    dataLines = [48, 10000];
+end
+
+%% Set up the Import Options and import the data
+opts = spreadsheetImportOptions("NumVariables", 13);
+
+% Specify sheet and range
+opts.Sheet = sheetName;
+if isinf(dataLines(1, 2))
+    opts.DataRange = "C" + dataLines(1, 1) + ":O";
+else
+    opts.DataRange = "C" + dataLines(1, 1) + ":O" + dataLines(1, 2);
+end
+
+% Specify column names and types
+opts.VariableNames = ["Cruise", "Sample_Date", "Cruise_CTD", "Niskin_Bottle",...
+    "Depth_m","Vol_Thios_Blank_ml","Vol_Thios_Standard_ml","Fixing_Temp_deg",...
+    "Bot_vol_at_Tfix_ml","Vol_Thios_Sample_ml","Iodate_mol","O2_mol","O2_umol_l-1"];
+opts.VariableTypes = ["string", "string", "string", "double",...
+    "double","double","double","double",...
+    "double","double","double","double","double"];
+
+% Import the data
+T = readtable(workbookFile, opts, "UseExcel", false);
+
+for idx = 2:size(dataLines, 1)
+    opts.DataRange = "C" + dataLines(idx, 1) + ":O" + dataLines(idx, 2);
+    tb = readtable(workbookFile, opts, "UseExcel", false);
+    T = [T; tb]; %#ok<AGROW>
+end
+
+% Find index of first row with missing value in first column
+firstMissingRow = find(ismissing(T{:, 1}), 1);
+    
+% Remove all rows below first row with missing value in first column
+if ~isempty(firstMissingRow)
+    T(firstMissingRow:end, :) = [];
+end
+
+T.CTD=str2double(extractAfter(T.Cruise_CTD, "-"));
+
+% Add variable "QF" with all values set to 2 if it doesn't exist
+if ~any(strcmp('QF', T.Properties.VariableNames))
+    T.QF = ones(size(T, 1), 1) * 2;
+end
+
+
+% Read header data from Excel file and assumes that the cruise name will be
+% next to the cell that says 'Cruise/Deployment name or ID:'
+%[~, headerText] = xlsread(workbookFile, "(1) Dataset overview", 'C39');
+[~, text] = xlsread(workbookFile, "(1) Dataset overview");
+% Find the cells that contain the text 'Cruise/Deployment name or ID:'
+index = strfind (text, 'Cruise/Deployment name or ID:');
+% Find the row and column of the non-empty cell
+[row, col] = find (not (cellfun ('isempty', index)));
+% Get the header text from the next cell
+headerText = text {row, col+1};
+% Convert header data to string and extract cruise name
+headerStr = string(headerText);
+
+% Create variable name by appending '_O2_winkler' to cruise name
+varName = headerStr + "_O2_winkler";
+
+% Assign value of T to variable with desired name in base workspace
+assignin('base', varName, T);
+
+end

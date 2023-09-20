@@ -1,0 +1,282 @@
+function [brob1,stats1,brob2,stats2,cross_match_table1,cross_match_table2]=crossMatchSal(inputType,varargin)
+%Function to match up autosal values against the CTD measurements at the
+%bottle closure. This function search for the corresponding cast and
+%corresponding Niskin bottle. Then a robust linear fit is adjusted to the
+%this match up, the results are ploted and the coefficients are stored to
+%adjust the CTD salinity profiles
+
+%There is two ways of call this functions:
+%
+% By specifiying the paths to the .bl files and the path to the
+% .xlsx Autosal file. Example:
+%     [brob1,stats1,brob2,stats2]=crossMatchSal('filepaths',filepath,workbookFile);%
+%
+%       in this way the function will call the subfunctions
+%       import_blt_sal.m  &  cruise_btl2table.m to construct the neccesary
+%       tables
+%
+% Or by providing the two corresponding tables resulting from those
+% functions or two tables in the format of those functions. Example:
+%     [brob1,stats1,brob2,stats2,cross_match_table]=crossMatchSal('tables',table1,table2);
+
+%The output table is helpfull to find which pair of values produce large
+%outliers and can be excluded in a consecutive iteration of the function
+%using a table with the pair of values [CTD_num,Pressure_dbar]. The program
+%will identify the corresponding points based on your input and exclude
+%them from the linear model
+%
+% NOTE: it is important that in both cases the filepath to the .bl files or
+% the bottle closure table are the first imput, and the Autosal table or
+% filepath to the .xlsw file are the second input. You always need to
+% specify the inputType first. To decide to get (or not) the output graph of the
+% robust linear fit and the identified outliers, the option is to set the
+% last value to 0. If is set to 1 or empty, you will have the graphs.
+% Example:
+%      [brob1,stats1,brob2,stats2,~]=crossMatchSal('tables',table1,table2,0);
+%       NO GRAPHS WOULD BE DISPLAYED OR TABLE CREATED (when you set the 
+% output with a ~, MATLAB would not create the variable)
+%
+%See also import_blt_sal.m  &  cruise_btl2table.m
+if strcmp(inputType,'filepaths')
+    filepath=varargin{1};
+    workbookFile=varargin{2};
+
+    cruise_btl2table(filepath);
+    import_btl_sal(workbookFile);
+
+    table1Name = cruise_btl2table(filepath);
+    table2Name = import_btl_sal(workbookFile);
+    Niskin = evalin('base', table1Name);
+    Autosal = evalin('base', table2Name);
+
+elseif strcmp(inputType,'tables')
+    Niskin = varargin{1};
+    Autosal = varargin{2};
+    table1Name = evalin('caller', 'inputname(2)');
+    table1Name = string(table1Name);
+    
+    table2Name = evalin('caller', 'inputname(3)');
+    table2Name = string(table2Name);
+else
+    error('Incorrect input type')
+end
+
+
+CruiseName = extractBefore(table2Name,6);
+
+idx = [];
+found = false(height(Autosal), 1);
+% Loop through each row in Autosal
+for i = 1:height(Autosal)
+    % Find the rows in Niskin where Niskin.CTD is equal to Autosal.CTD and Niskin.Niskin_Bottle is equal to Autosal.CTD
+    tempo_idx = find(Niskin.CTD == Autosal.CTD(i) & Niskin.Niskin_Bottle == Autosal.ROSETTE(i));
+
+    % Append the indices to the idx array
+    idx = [idx; tempo_idx];
+
+    % Keep track of which rows in Winkler were found in Niskin
+    if ~isempty(tempo_idx)
+        found(i) = true;
+    end    
+end
+
+% Find the row in Winkler that was not found in Niskin
+not_found = find(~found);
+
+% Display a warning message if a row in Autosal was not found in Niskin
+if ~isempty(not_found)
+    warning('The following row(s) in the Autosal table was not found in the corresponding Niskin bottle table:')
+    disp(Autosal(not_found,:))
+    warning('This row(s) will be not considered in the analysis and remove from the corresponding table. If you want to include them, considere to review the original files (.btl and .xls) and the logsheet to find the source of the error')
+    %Contact me if you want to keep the values for some reason and fill the
+    %missing imported values from Niskin with a NaN. I have done it like
+    %this because of practicalities after find it an error by appliying
+    %these collection of functions to a new cruise
+end
+
+Autosal(~found,:)=[];
+
+%Adding press values to the autosal table
+Autosal.PRESS=Niskin.PrDM(idx);
+Autosal=movevars(Autosal,'PRESS','Before','BOTTLE');
+
+% Store the information in the original table
+assignin('base', table2Name, Autosal);
+
+
+X=Autosal.AUTOSAL;
+Y1=Niskin.Sal00(idx); %For the primary salinity of the CTD
+Y2=Niskin.Sal11(idx); %For the secondary salinity of the CTD
+
+Depth=Autosal.PRESS;
+Autosal_CTD = Autosal.CTD;
+unique_CTD = unique(Autosal_CTD);
+    
+
+exclude_outliers_1=zeros(size(Autosal_CTD));
+exclude_outliers_2=zeros(size(Autosal_CTD));
+if nargin ==5
+    exclude_outliers=varargin{4};
+    exclude_outliers_1=exclude_outliers(:,1);
+    exclude_outliers_2=exclude_outliers(:,2);
+end
+
+
+%% Primary salinity sensor
+X1=X(~exclude_outliers_1);Y1=Y1(~exclude_outliers_1);
+[brob1,stats1]=robustfit(X1,Y1);%Robust linear regression
+
+if nargin < 4 || varargin{3} == 1
+    %dealing with outliers. mad= median absolute residuals
+    outliers_ind1=find(abs(stats1.resid)>stats1.mad_s);
+
+    fs=16;
+    figure
+    bar(abs(stats1.resid))
+    hold on
+    yl=yline(stats1.mad_s,'k--');
+    yl_y=yl.Value;
+    yl_x=mean(xlim);
+    text(yl_x,yl_y,'Median Absolute Residuals','FontWeight','bold','FontSize',fs)
+    hold off
+    xlabel('sample')
+    ylabel('Residuals')
+    ax=gca;
+    ax.FontSize=fs;
+    title(CruiseName + ' ' +'Primary salinity')
+
+    figure
+    scatter(X1,Y1,20,'Filled')
+    hold on
+    plot(X1(outliers_ind1),Y1(outliers_ind1),'mo','LineWidth',2)
+    plot(X1,brob1(1)+brob1(2)*X1,'g')
+    hold off
+    xlabel('AutoSal salinity [psu]')
+    ylabel('CTD salinity [psu]')
+    legend('Data','Outlier','Robust Regression','Location','best')
+    grid on; box on;
+    ax=gca;
+    ax.FontSize=fs;
+    title(CruiseName + ' ' +'Primary salinity')
+    axis equal;axis square
+
+
+    resid1 = stats1.resid;
+    
+    Depth1=Depth(~exclude_outliers_1);
+    Autosal_CTD1=Autosal_CTD(~exclude_outliers_1);
+    unique_CTD1 = unique(Autosal_CTD1);
+
+    figure
+    scatter(resid1, Depth1, 60,Autosal_CTD1,'filled','MarkerEdgeColor','k');
+    cmap=colormap(parula(length(unique_CTD1)));
+    axis ij
+
+    hold on;
+    h=zeros(length(unique_CTD1),1);
+    lineStyles={'-','--'};
+    for i = 1:length(unique_CTD1)
+        idx = find(Autosal_CTD1 == unique_CTD1(i));
+        h(i)=plot(resid1(idx), Depth1(idx), 'Color', cmap(i,:), 'LineWidth', 2,'LineStyle', lineStyles{mod(i,2)+1});
+    end
+    legendLabels = cellstr(num2str(unique_CTD1)); 
+    xline(0,'LineWidth',1.5)
+    lgd = legend(h, legendLabels,'location','northeastoutside'); 
+    lgd.Title.String = 'CTD'; 
+
+    ax=gca;
+    ax.FontSize=fs;
+    ax.YLabel.String='Pressure (dbar)';
+    ax.XLabel.String='Residual_{Autosal-CTD}';
+    title(CruiseName + ' ' +'Primary Salinity')
+    box on; grid on
+
+end
+
+%% Secondary salinity sensor
+X2=X(~exclude_outliers_2);Y2=Y2(~exclude_outliers_2);
+[brob2,stats2]=robustfit(X2,Y2);%Robust linear regression
+if nargin < 4 || varargin{3} == 1
+    %dealing with outliers. mad= median absolute residuals
+    outliers_ind2=find(abs(stats2.resid)>stats2.mad_s);
+
+    fs=16;
+    figure
+    bar(abs(stats2.resid))
+    hold on
+    yl=yline(stats2.mad_s,'k--');
+    yl_y=yl.Value;
+    yl_x=mean(xlim);
+    text(yl_x,yl_y,'Median Absolute Residuals','FontWeight','bold','FontSize',fs)
+    hold off
+    xlabel('sample')
+    ylabel('Residuals')
+    ax=gca;
+    ax.FontSize=fs;
+    title(CruiseName + ' ' +'Secondary salinity')
+
+    figure
+    scatter(X2,Y2,20,'Filled')
+    hold on
+    plot(X2(outliers_ind2),Y2(outliers_ind2),'mo','LineWidth',2)
+    plot(X2,brob2(1)+brob2(2)*X2,'g')
+    hold off
+    xlabel('AutoSal salinity [psu]')
+    ylabel('CTD salinity [psu]')
+    legend('Data','Outlier','Robust Regression','Location','best')
+    grid on; box on;
+    ax=gca;
+    ax.FontSize=fs;
+    title(CruiseName + ' ' +'Secondary salinity')
+    axis equal;axis square
+
+    resid2 = stats2.resid;
+
+    Depth2=Depth(~exclude_outliers_2);
+    Autosal_CTD2=Autosal_CTD(~exclude_outliers_2);
+    unique_CTD2 = unique(Autosal_CTD2);
+
+    figure
+    scatter(resid2, Depth2, 60,Autosal_CTD2,'filled','MarkerEdgeColor','k');
+    cmap=colormap(parula(length(unique_CTD2)));
+    axis ij
+
+    hold on;
+    h=zeros(length(unique_CTD2),1);
+    lineStyles={'-','--'};
+    for i = 1:length(unique_CTD2)
+        idx = find(Autosal_CTD2 == unique_CTD2(i));
+        h(i)=plot(resid2(idx), Depth2(idx), 'Color', cmap(i,:), 'LineWidth', 2,'LineStyle', lineStyles{mod(i,2)+1});
+    end
+    legendLabels = cellstr(num2str(unique_CTD2)); 
+    xline(0,'LineWidth',1.5)
+    lgd = legend(h, legendLabels,'location','northeastoutside'); 
+    lgd.Title.String = 'CTD'; 
+
+    ax=gca;
+    ax.FontSize=fs;
+    ax.YLabel.String='Pressure (dbar)';
+    ax.XLabel.String='Residual_{Autosal-CTD}';
+    title(CruiseName + ' ' +'Secondary Salinity')
+    box on; grid on
+
+end
+
+mad_s_value_1 = stats1.mad_s * ones(size(Autosal_CTD1));
+mad_s_abs_1 = abs(stats1.resid) > stats1.mad_s;
+
+mad_s_value_2 = stats2.mad_s * ones(size(Autosal_CTD2));
+mad_s_abs_2 = abs(stats2.resid) > stats2.mad_s;
+
+
+cross_match_table1=table(Autosal_CTD1,Depth1,X1,Y1,resid1,mad_s_value_1,...
+    mad_s_abs_1);
+cross_match_table1.Properties.VariableNames={'CTD_num','Pressure_dbar',...
+    'Autosal_sal','Prim_salinity','Resid_primary','MAD_primary','Outlier_1'};
+
+cross_match_table2=table(Autosal_CTD2,Depth2,X2,Y2,resid2,mad_s_value_2, ...
+    mad_s_abs_2);
+cross_match_table2.Properties.VariableNames={'CTD_num','Pressure_dbar',...
+    'Autosal_sal','Second_salinity','Resid_secondary','MAD_secondary','Outlier_2'};
+
+end

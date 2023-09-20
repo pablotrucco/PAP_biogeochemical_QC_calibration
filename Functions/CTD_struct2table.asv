@@ -1,0 +1,39 @@
+function CTD_table=CTD_struct2table(CruiseName_CTD_profiles)
+name = inputname(1);
+
+% Get the first field name
+fields = fieldnames(CruiseName_CTD_profiles);
+first_field = fields{1};
+% Get the substructure of the first field
+first_substruct = CruiseName_CTD_profiles.(first_field);
+% Convert the substructure to a table
+first_subtable = struct2table(first_substruct);
+first_subtable.CTD_cast=repmat(first_field, height(first_subtable), 1);
+% Initialize an empty table with the same variable names as the first subtable
+CTD_table = first_subtable;
+
+for i = 2:length(fields)
+    % Get the current field name
+    field = fields{i};
+    % Get the substructure of the current field
+    substruct = CruiseName_CTD_profiles.(field);
+    % Convert the substructure to a table
+    subtable = struct2table(substruct);
+    % Add a column for the CTD cast number
+    subtable.CTD_cast = repmat(field, height(subtable), 1);
+    % Join the subtable with the main table using outerjoin
+    CTD_table = outerjoin(CTD_table, subtable, 'MergeKeys', true);
+end
+
+% Move the CTD_cast column to the first position
+
+CTD_table.Datetime=datetime(datestr(CTD_table.DATE));
+
+JC231_CTD_profiles_table.Datetime=datetime(datestr(JC231_CTD_profiles_table.DATE));
+
+CTD_table = movevars(CTD_table, 'Datetime', 'Before', 1);
+CTD_table = movevars(CTD_table, 'CTD_cast', 'Before', 1);
+CTD_table = sortrows(CTD_table,'CTD_cast','ascend');
+
+assignin('base', [name '_table'], CTD_table);
+end

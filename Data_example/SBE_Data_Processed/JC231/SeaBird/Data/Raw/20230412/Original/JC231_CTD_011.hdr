@@ -1,0 +1,37 @@
+* Sea-Bird SBE 9 Data File:
+* FileName = C:\Users\sandm\Documents\Cruises\JC231\CTD Data\CTD Raw Data\JC231_CTD_011.hdr
+* Software Version Seasave V 7.26.7.121
+* Temperature SN = 5700
+* Conductivity SN = 2164
+* Number of Bytes Per Scan = 41
+* Number of Voltage Words = 4
+* Number of Scans Averaged by the Deck Unit = 1
+* Append System Time to Every Scan
+* System UpLoad Time = May 15 2022 08:45:02
+* NMEA Latitude = 49 00.00 N
+* NMEA Longitude = 016 30.00 W
+* NMEA UTC (Time) = May 15 2022  08:45:01
+* Store Lat/Lon Data = Append to Every Scan
+* SBE 11plus V 5.2
+* number of scans to average = 1
+* pressure baud rate = 9600
+* NMEA baud rate = 9600
+* GPIB address = 1
+* advance primary conductivity  0.073 seconds
+* advance secondary conductivity  0.073 seconds
+* autorun on power up is disabled
+* S>
+** Ship: RRS James Cook 
+** Cruise: JC231 
+** Cast: 011
+** Event: 
+** Station: 
+** Julian Day: 135
+** Time (GMT): 08:50
+** Latitude: 49 0.00 ' N
+** Longitude: 16 30.00 ' W
+** Depth (uncorrected m): 4807m
+** Principal Scientist: Dr Susan Hartman 
+** Operator:  TP / JG
+* System UTC = May 15 2022 08:45:02
+*END*
