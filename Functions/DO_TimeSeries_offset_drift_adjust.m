@@ -1,4 +1,4 @@
-function microcat_table=DO_TimeSeries_offset_drift_adjust(first_cruise,second_cruise,filepath)
+function microcat_table=DO_TimeSeries_offset_drift_adjust(first_cruise,second_cruise,microcat_table)
 
 
 %Import microcat data 
@@ -7,8 +7,8 @@ function microcat_table=DO_TimeSeries_offset_drift_adjust(first_cruise,second_cr
 mooring_lat=48.9667;
 mooring_lon=-16.4167;
 %***
-opts=detectImportOptions(filepath);
-microcat_table=readtable(filepath,opts);
+%opts=detectImportOptions(filepath);
+%microcat_table=readtable(filepath,opts);
 
 microcat_table.Datetime=datetime(datestr(microcat_table.MatlabTime_days_));
 microcat_table = movevars(microcat_table, 'Datetime', 'Before', 1);

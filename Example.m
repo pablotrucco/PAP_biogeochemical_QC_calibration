@@ -8,10 +8,10 @@ addpath(genpath(currentDir))
 
 %To run DY130 set cruise_opt to 1 for JC231 set cruise_opt to 2
 
-cruise_opt=2;
+cruise_opt=1;
 
 %==========================================================================
-%OUTSIDE OF MATLAB AND PREVIOUS TO EXECUTE THE FUNCTIONS  
+%OUTSIDE OF MATLAB AND  PREVIOUS TO EXECUTE THE FUNCTIONS  
 %
 %                       CCCCC  TTTTTTTT    DDDDD
 %                      CC         TT       D    D
@@ -72,6 +72,7 @@ structName=newStructNames{1};
 
 evalin('base', ['CTD_sal_qc(' structName ');']);
 
+
 clearvars namesBefore varsAfter newNames newStructNames r 
 
 %--------------------------------5-----------------------------------------
@@ -91,7 +92,6 @@ clearvars varsAfter newTableNames ans
 %two datasets. See Manual for clarifications
 if cruise_opt==1
     DY130_CTD_btl.Niskin_Bottle(7:22)=DY130_CTD_btl.Niskin_Bottle(7:22)+2;
-
 end
 %--------------------------------6-----------------------------------------
 %STAGE SIX: Import the results of the Autosal measurements. The input is 
@@ -300,24 +300,163 @@ evalin('base',['CTD_struct2table(' structName ');'])
 %STAGE TWO: Calibrating the sensor in the mooring with the calibrated CTD
 %cast from the deployment and recovery of the moooring. 
 %The location of the sensor
+currentDir = pwd;
+
 filepath=fullfile(currentDir,'Data_example/Timeseries_DY130_JC231/OneDrive_2_13-04-2023/timeseries/buoy/DY130_Apr2021_SBE37-ODO-16503/DY130_Apr2021_SBE37-ODO_sn16503_1m-corrected-Jon.xlsx');
+opts=detectImportOptions(filepath);
+microcat_table=readtable(filepath,opts);
 
 %Change the name of this two variables if you different cruises
 first_cruise=DY130_CTD_profiles_table;
 second_cruise=JC231_CTD_profiles_table;
 
-microcat_table=DO_TimeSeries_offset_drift_adjust(first_cruise,second_cruise,filepath);
+microcat_table=SAL_TimeSeries_offset_drift_adjust(first_cruise,second_cruise,microcat_table);
+
+microcat_table=DO_TimeSeries_offset_drift_adjust(first_cruise,second_cruise,microcat_table);
+
+%All the Gibbs Equations functions to ultimate calculate oxygen saturation
+%and oxygen supersaturation.On the microcat data. PAP station Lat=48.9667, 
+% Lon=-16.4167
+microcat_table.SA=gsw_SA_from_SP(microcat_table.SalinityPractical_PSU_,microcat_table.PressureStrainGauge_db_, ...
+    -16.4167,48.9667);
+microcat_table.CT=gsw_CT_from_t(microcat_table.SA,microcat_table.Temperature_ITS_90DegC_, ...
+    microcat_table.PressureStrainGauge_db_);
+microcat_table.O2Sat=gsw_O2sol(microcat_table.SA,microcat_table.CT, ...
+    microcat_table.PressureStrainGauge_db_,-16.4167,48.9667);
+microcat_table.Supersaturation=((microcat_table.OxygenSBE63_umol_kg_Offset_linear_drift_corrected./microcat_table.O2Sat)-1)*100;
+
+
+
 
 
 %--------------------------------3----------------------------------------
-%STAGE THREE: Checking for the presence of floats
-area=1.43E6;%Based on Henson et al., 2016 for PAP observations
+%STAGE THREE: Checking there are any floats during the year that we are
+%working on. The search footprint is based on the area that Henson et al., 2016 
+% defined for for PAP observations
+area=1.43E6;
 centroid=[48.9667,-16.4167]; %The location of the PAP mooring
 [vertices] = centroid_area_to_vertices(centroid, area); %This can be changed 
                                                         %if you have other
                                                         %vertices with the
                                                         %shape of the
-                                                        %footprint
+                                                        %footprint. For
+                                                        %instance if you
+                                                        %get from Steph the
+                                                        %actual polygon
+                                                        %defined for PAP
 plot_footprints(centroid, vertices)
-float_in_mooring_footprint(vertices,microcat_table)
 
+
+%This function below will make a selection of the floats nearby and get the
+%data at the depth iof the sensor to use it in the following lines for
+%having an extra comparison. It will also display in the command window how
+%many floats and profiles you can get for the given time, space and sensor
+%being selected.
+[PAP_DOXY_float_DY130_JC231,~,floats_ids,~,TT_float_target_depth]=float_in_mooring_footprint( ...
+    vertices,microcat_table,'DOXY');
+
+
+%This line of code will show you which floats are present for the
+%determined area, and the trajectories that they had.
+show_trajectories(floats_ids,'color','multiple')
+
+%This line will add to the float data table (the table with the relative
+%measurements at the same depth that the depth of the mooring sensor) a
+%column with the distance between the mooring and the floats
+TT_float_target_depth.dist_from_mooring=deg2km(distance(TT_float_target_depth{:,1},...
+    TT_float_target_depth{:,2},centroid(1),centroid(2)));
+
+%All the Gibbs Equations functions to ultimate calculate oxygen saturation
+%and oxygen supersaturation. In the float data
+TT_float_target_depth.SA=gsw_SA_from_SP(TT_float_target_depth.Sal,TT_float_target_depth.Press, ...
+    TT_float_target_depth.Lon,TT_float_target_depth.Lat);
+TT_float_target_depth.CT=gsw_CT_from_t(TT_float_target_depth.SA,TT_float_target_depth.Temp, ...
+    TT_float_target_depth.Press);
+TT_float_target_depth.O2Sat=gsw_O2sol(TT_float_target_depth.SA,TT_float_target_depth.CT, ...
+    TT_float_target_depth.Press,TT_float_target_depth.Lon,TT_float_target_depth.Lat);
+TT_float_target_depth.Supersaturation=((TT_float_target_depth.DO./TT_float_target_depth.O2Sat)-1)*100;
+
+
+
+
+
+
+
+%Oxygen
+figure
+sc1=scatter(microcat_table.Datetime,microcat_table.OxygenSBE63_umol_kg_Offset_linear_drift_corrected,20,'k','filled');
+hold on
+sc2=scatter(TT_float_target_depth.Time,TT_float_target_depth.DO,80,TT_float_target_depth.dist_from_mooring,'filled');
+
+div=50;
+zmax=round(max(TT_float_target_depth.dist_from_mooring)/div)*div;
+zmin=round(min(TT_float_target_depth.dist_from_mooring)/div)*div;
+
+
+cb=colorbar;
+colormap(jet(round((zmax-zmin)/div)))
+cb.Title.String='Float';
+cb.Label.String='dist from PAP (km)';
+cb.Limits=[zmin zmax];
+box on
+grid on
+ax=gca;
+ax.FontSize=14;
+ax.YLabel.String='Dissolved Oxygen [\mumol kg^-^1]';
+ax.XMinorTick='on';
+legend([sc1],'PAP obs')
+
+
+%Supersaturation difference between float and mooring
+figure
+sc1=scatter(microcat_table.Datetime,microcat_table.Supersaturation,20,'k','filled');
+hold on
+sc2=scatter(TT_float_target_depth.Time,TT_float_target_depth.Supersaturation,80,TT_float_target_depth.dist_from_mooring,'filled');
+
+div=50;
+zmax=round(max(TT_float_target_depth.dist_from_mooring)/div)*div;
+zmin=round(min(TT_float_target_depth.dist_from_mooring)/div)*div;
+
+
+cb=colorbar;
+colormap(jet(round((zmax-zmin)/div)))
+cb.Title.String='Float';
+cb.Label.String='dist from PAP (km)';
+cb.Limits=[zmin zmax];
+box on
+grid on
+ax=gca;
+ax.FontSize=14;
+ax.YLabel.String='Oxygen supersaturation (%)';
+ax.XMinorTick='on';
+legend([sc1],'PAP obs')
+
+
+
+%T-S diagram of floats and mooring data
+
+figure
+sc1=scatter(microcat_table.SA,microcat_table.CT,20,'k','filled');
+hold on
+sc2=scatter(TT_float_target_depth.SA,TT_float_target_depth.CT,60,TT_float_target_depth.dist_from_mooring,'Filled');
+
+div=50;
+zmax=round(max(TT_float_target_depth.dist_from_mooring)/div)*div;
+zmin=round(min(TT_float_target_depth.dist_from_mooring)/div)*div;
+
+
+cb=colorbar;
+colormap(jet(round((zmax-zmin)/div)))
+cb.Title.String='Float';
+cb.Label.String='dist from PAP (km)';
+cb.Limits=[zmin zmax];
+
+box on
+grid on
+axis square
+ax=gca;
+ax.FontSize=14;
+ax.YLabel.String='CT (°C)';
+ax.XLabel.String='SA [g kg^-^1]';
+ax.XMinorTick='on';
+legend([sc1],'PAP obs')
