@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Loop_Edit >
+  <Version value="7.26.7.129" />
+  <ServerName value="Loop Edit" />
+  <InputDir value="C:\Users\pabtru\Documents\DY130\SeaBird\Data\Processed" />
+  <InputFileArray size="14" GrowBy="-1" >
+    <ArrayItem index="0" value="DY130_001cfa.cnv" />
+    <ArrayItem index="1" value="DY130_002cfa.cnv" />
+    <ArrayItem index="2" value="DY130_003cfa.cnv" />
+    <ArrayItem index="3" value="DY130_004cfa.cnv" />
+    <ArrayItem index="4" value="DY130_005cfa.cnv" />
+    <ArrayItem index="5" value="DY130_006cfa.cnv" />
+    <ArrayItem index="6" value="DY130_007cfa.cnv" />
+    <ArrayItem index="7" value="DY130_008cfa.cnv" />
+    <ArrayItem index="8" value="DY130_009cfa.cnv" />
+    <ArrayItem index="9" value="DY130_010cfa.cnv" />
+    <ArrayItem index="10" value="DY130_011cfa.cnv" />
+    <ArrayItem index="11" value="DY130_012cfa.cnv" />
+    <ArrayItem index="12" value="DY130_013cfa.cnv" />
+    <ArrayItem index="13" value="DY130_014cfa.cnv" />
+  </InputFileArray>
+  <OutputDir value="C:\Users\pabtru\Documents\DY130\SeaBird\Data\Processed" />
+  <NameAppend value="l" />
+  <OutputFile value="" />
+  <LastProcessed value="0" />
+  <MinVelocityType value="0" high="1" low="0" initialValue="0" />
+  <MinCTD_Velocity value="0.250000" />
+  <TimeWindowSize value="300.000000" />
+  <PercentMeanSpeed value="20.000000" />
+  <ExcludeMarkedBad value="1" />
+  <RemoveSurfaceSoak value="1" />
+  <UseDeckPressure value="0" />
+  <SurfaceSoakDepth value="1.000000" />
+  <SurfaceSoakDepthMin value="0.500000" />
+  <SurfaceSoakDepthMax value="2.000000" />
+</Loop_Edit>

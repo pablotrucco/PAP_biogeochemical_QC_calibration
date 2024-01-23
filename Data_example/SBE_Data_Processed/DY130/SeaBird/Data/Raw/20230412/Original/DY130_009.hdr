@@ -1,0 +1,37 @@
+* Sea-Bird SBE 9 Data File:
+* FileName = C:\Users\sandm\Documents\Cruises\DY130\Data\Raw Data\DY130_009.hdr
+* Software Version Seasave V 7.26.7.121
+* Temperature SN = 03P-5494
+* Conductivity SN = 04C-3768
+* Number of Bytes Per Scan = 45
+* Number of Voltage Words = 4
+* Number of Scans Averaged by the Deck Unit = 1
+* Append System Time to Every Scan
+* System UpLoad Time = Apr 06 2021 06:46:39
+* NMEA Latitude = 48 56.12 N
+* NMEA Longitude = 016 26.57 W
+* NMEA UTC (Time) = Apr 06 2021  06:46:39
+* Store Lat/Lon Data = Append to Every Scan
+* SBE 11plus V 5.2
+* number of scans to average = 1
+* pressure baud rate = 2400
+* NMEA baud rate = 9600
+* GPIB address = 1
+* advance primary conductivity  0.073 seconds
+* advance secondary conductivity  0.073 seconds
+* autorun on power up is disabled
+* S>
+** Ship: RRS Discovery 
+** Cruise: DY130 
+** Cast: DY130_009
+** Station: 057
+** Julian Day: 096
+** Date: 06/04/2021
+** Time (GMT): 06:46
+** Latitude: 48 56.11N
+** Longitude: 16 26.57W
+** Depth (uncorrected m): 4809
+** Principal Scientist: Sue Hart 
+** Operator: BP/PH 
+* System UTC = Apr 06 2021 06:46:39
+*END*

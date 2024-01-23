@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Bin_Average >
+  <Version value="7.26.7.129" />
+  <ServerName value="Bin Average" />
+  <InputDir value="C:\Users\pabtru\Documents\JC231\SeaBird\Data\Processed" />
+  <InputFileArray size="11" GrowBy="-1" >
+    <ArrayItem index="0" value="JC231_CTD_001cfald.cnv" />
+    <ArrayItem index="1" value="JC231_CTD_002cfald.cnv" />
+    <ArrayItem index="2" value="JC231_CTD_003cfald.cnv" />
+    <ArrayItem index="3" value="JC231_CTD_004cfald.cnv" />
+    <ArrayItem index="4" value="JC231_CTD_005cfald.cnv" />
+    <ArrayItem index="5" value="JC231_CTD_006cfald.cnv" />
+    <ArrayItem index="6" value="JC231_CTD_007cfald.cnv" />
+    <ArrayItem index="7" value="JC231_CTD_008cfald.cnv" />
+    <ArrayItem index="8" value="JC231_CTD_009cfald.cnv" />
+    <ArrayItem index="9" value="JC231_CTD_010cfald.cnv" />
+    <ArrayItem index="10" value="JC231_CTD_011cfald.cnv" />
+  </InputFileArray>
+  <OutputDir value="C:\Users\pabtru\Documents\JC231\SeaBird\Data\Processed" />
+  <NameAppend value="b" />
+  <OutputFile value="" />
+  <LastProcessed value="0" />
+  <BinType value="0" />
+  <BinSize value="1.000000" />
+  <IncludeNumberScans value="0" />
+  <ExcludeMarkedBad value="1" />
+  <ScansToSkip value="0" />
+  <ScansToOmit value="0" />
+  <MinScansPerBin value="1" />
+  <MaxScansPerBin value="2147483647" />
+  <CastToProcess value="0" high="2" low="0" initialValue="0" />
+  <IncludeSurfaceBin value="0" />
+  <SurfaceBinMinVal value="0.000000" />
+  <SurfaceBinMaxVal value="0.000000" />
+  <SurfaceBinVal value="0.000000" />
+</Bin_Average>
