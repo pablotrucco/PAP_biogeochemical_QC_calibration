@@ -45,6 +45,10 @@ if cruise_opt==2
     filepath=fullfile(currentDir,'Data_example/SBE_Data_Processed/JC231/SeaBird/Data/Processed');
 end
 
+if cruise_opt==3
+    filepath=fullfile(currentDir,'Data_example/SBE_Data_Processed/DY103/SeaBird/Data/Batch');
+end
+
 %Call the function and a little bit of more magic (nonsense,really) to get 
 % the name of the structure
 
@@ -108,6 +112,10 @@ end
 
 if cruise_opt==2
     workbookFile=fullfile(currentDir,'Data_example/JC231/Sensors_and_Moorings/CTD/Autosal Data/JC231_SALFORM_.xlsx');
+end
+
+if cruise_opt==3
+    workbookFile=fullfile(currentDir,'Data_example/DY103/Sensors_and_Moorings/CTD/Autosal Data/DY103_SALFORM_.xlsx');
 end
 
 

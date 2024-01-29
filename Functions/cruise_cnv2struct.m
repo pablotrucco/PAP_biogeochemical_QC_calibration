@@ -82,9 +82,14 @@ for ii=1:length(subclassNames)
    
     % Oxygen primary in ml/L
     evalin('base', [newStructName '.' subclassName '.CTDOXY_ml_L_1=r.sbeox0MLL;']); %ml/l
-    % Oxygen secondary in ml/L
-    evalin('base', [newStructName '.' subclassName '.CTDOXY_ml_L_2=r.sbeox1MLL;']); 
 
+    % Oxygen secondary in ml/L. Sometimes for PAP historical measurements
+    % there is no secondary measurements, so the following conditionant has
+    % been updated. This can be adapted for future version with similar
+    % issues for other variables when you have the same problem.
+    if isfield(r, 'sbeox1MLL')
+        evalin('base', [newStructName '.' subclassName '.CTDOXY_ml_L_2=r.sbeox1MLL;']);
+    end
 
 
     % Oxygen primary in umol/kg

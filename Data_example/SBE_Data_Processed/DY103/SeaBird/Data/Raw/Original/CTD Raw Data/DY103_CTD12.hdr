@@ -1,0 +1,28 @@
+* Sea-Bird SBE 9 Data File:
+* FileName = C:\Users\sandm\Documents\Cruises\DY103\Data\CTD Raw Data\DY103_CTD12.hdr
+* Software Version Seasave V 7.26.7.121
+* Temperature SN = 03P-4814
+* Conductivity SN = 04C-2165
+* Number of Bytes Per Scan = 41
+* Number of Voltage Words = 4
+* Number of Scans Averaged by the Deck Unit = 1
+* Append System Time to Every Scan
+* System UpLoad Time = Jul 05 2019 12:57:09
+* NMEA Latitude = 49 00.00 N
+* NMEA Longitude = 016 30.00 W
+* NMEA UTC (Time) = Jul 05 2019  12:57:09
+* Store Lat/Lon Data = Append to Every Scan
+** Ship: RRS Discovery 
+** Cruise: DY103 
+** Cast: 12
+** Station: 
+** Julian Day: 186
+** Date: 05/07/19
+** Time: 13:00
+** Latitude: 49 00.02'N
+** Longitude: 16 30.02'W
+** Depth (uncorr m): 4807
+** Principal Scientist: S Hartman 
+** Operator: J Wynar/T Powell 
+* System UTC = Jul 05 2019 12:57:09
+*END*

@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Bin_Average >
+  <Version value="7.26.7.129" />
+  <ServerName value="Bin Average" />
+  <InputDir value="C:\Users\pabtru\Documents\DY130\SeaBird\Data\Processed" />
+  <InputFileArray size="14" GrowBy="-1" >
+    <ArrayItem index="0" value="DY130_001cfald.cnv" />
+    <ArrayItem index="1" value="DY130_002cfald.cnv" />
+    <ArrayItem index="2" value="DY130_003cfald.cnv" />
+    <ArrayItem index="3" value="DY130_004cfald.cnv" />
+    <ArrayItem index="4" value="DY130_005cfald.cnv" />
+    <ArrayItem index="5" value="DY130_006cfald.cnv" />
+    <ArrayItem index="6" value="DY130_007cfald.cnv" />
+    <ArrayItem index="7" value="DY130_008cfald.cnv" />
+    <ArrayItem index="8" value="DY130_009cfald.cnv" />
+    <ArrayItem index="9" value="DY130_010cfald.cnv" />
+    <ArrayItem index="10" value="DY130_011cfald.cnv" />
+    <ArrayItem index="11" value="DY130_012cfald.cnv" />
+    <ArrayItem index="12" value="DY130_013cfald.cnv" />
+    <ArrayItem index="13" value="DY130_014cfald.cnv" />
+  </InputFileArray>
+  <OutputDir value="C:\Users\pabtru\Documents\DY130\SeaBird\Data\Processed" />
+  <NameAppend value="b" />
+  <OutputFile value="" />
+  <LastProcessed value="0" />
+  <BinType value="0" />
+  <BinSize value="1.000000" />
+  <IncludeNumberScans value="0" />
+  <ExcludeMarkedBad value="1" />
+  <ScansToSkip value="0" />
+  <ScansToOmit value="0" />
+  <MinScansPerBin value="1" />
+  <MaxScansPerBin value="2147483647" />
+  <CastToProcess value="0" high="2" low="0" initialValue="0" />
+  <IncludeSurfaceBin value="0" />
+  <SurfaceBinMinVal value="0.000000" />
+  <SurfaceBinMaxVal value="0.000000" />
+  <SurfaceBinVal value="0.000000" />
+</Bin_Average>
