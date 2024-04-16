@@ -1,0 +1,29 @@
+M       Data_example/DY103/Bottle_oxygen/metadata_submission_templates_2019_bottle oxygen_DY103.xlsx[m
+
+M       Data_example/DY103/Sensors_and_Moorings/CTD/Autosal Data/DY103_SALFORM_.xlsx[m
+
+M       Data_example/DY130/Sensors_and_Moorings/Salinity/DY130/SALFORM_SS.xlsx[m
+
+M       Data_example/JC231/Bottle_oxygen/metadata_submission_templates_2022_bottle oxygen_JC231.xlsx[m
+
+M       Example.m[m
+
+D       Functions/CTD_O2_qc.asv[m
+
+M       Functions/add_lat_lon_table.m[m
+
+M       Functions/adjust_oxygen_profiles.m[m
+
+M       Functions/adjust_salinity_profiles.m[m
+
+D       Functions/crossMatchO2.asv[m
+
+M       Functions/crossMatchO2.m[m
+
+D       Functions/cruise_btl2table.asv[m
+
+M       Functions/cruise_btl2table.m[m
+
+M       Functions/cruise_cnv2struct.m[m
+
+M       Functions/import_autosal.m[m

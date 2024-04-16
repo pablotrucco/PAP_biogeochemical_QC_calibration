@@ -16,12 +16,19 @@ function table=add_lat_lon_table(table,cruise_struct)
     % Iterate over CTD casts in winkler_table
     for i = 1:numel(ctd_casts)
         % Construct field name for corresponding CTD cast
-        field_name = sprintf('CTD_%03d', ctd_casts(i));
+        try
+            field_name = sprintf('CTD_%03d', ctd_casts(i));
 
-        % Extract latitude and longitude from latlon_struct
-        latitude = unique(cruise_struct.(field_name).LATITUDE);
-        longitude = unique(cruise_struct.(field_name).LONGITUDE);
+            % Extract latitude and longitude from latlon_struct
+            latitude = unique(cruise_struct.(field_name).LATITUDE);
+            longitude = unique(cruise_struct.(field_name).LONGITUDE);
+        catch
+            field_name = sprintf('CTD_%02d', ctd_casts(i));
 
+            % Extract latitude and longitude from latlon_struct
+            latitude = unique(cruise_struct.(field_name).LATITUDE);
+            longitude = unique(cruise_struct.(field_name).LONGITUDE);
+        end
         % Store latitude and longitude in corresponding rows of winkler_table
         latitudes(i) = latitude;
         longitudes(i) = longitude;

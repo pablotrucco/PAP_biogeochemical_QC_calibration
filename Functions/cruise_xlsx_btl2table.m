@@ -1,15 +1,34 @@
-function newTableName=cruise_btl2table(filepath)
+function newTableName=cruise_xlsx_btl2table(filepath)
 
-fileNames = dir(fullfile(filepath, '*.btl'));
+fileNames = dir(fullfile(filepath2, '*.xlsx'));
 fileNames = fileNames(~startsWith({fileNames.name}, '._'));%Because of mac 
 %Creating extra files
 %Getting the cruise name
 newTableName=genvarname(fileNames(1).name(1:5));
+
+
+
+
 % Initialize a cell array to store the data from all files
 all_data = {};
 % Loop through each file
 for k = 1:length(fileNames)
-    filename = fullfile(filepath, fileNames(k).name);
+    filename = fullfile(filepath2, fileNames(k).name);
+
+    opts=detectImportOptions(filename);
+    T = readtable(filename, opts);
+
+    % Use regexp to find the CTD number, including leading zeros
+    % The pattern looks for 'CTD' followed by any number of digits (\d+)
+    ctdPattern = 'CTD(\d+)';
+    tokens = regexp(filename, ctdPattern, 'tokens');
+    ctdNumber = tokens{1}{1}; % This extracts the first (and should be only) match group
+
+    % Construct the new string for use in the column, combining cruise name and CTD number
+    newColumnEntry = sprintf('%s_%s', newTableName, ctdNumber);
+    T.Cruise_CTD = repmat({newColumnEntry}, height(T), 1);
+
+
     fid = fopen(filename, 'r');
     if fid == -1
         error('Could not open file: %s', filename);
@@ -59,18 +78,15 @@ for k = 1:length(fileNames)
         end
     end
     fclose(fid);
-    
+
     % Extract CTD cast number from filename and create CTD cast string in CTD_XXX format
     ctd_cast_str = regexp(filename, 'CTD_\d{3}', 'match');
     ctd_cast_str = strrep(ctd_cast_str, 'CTD', newTableName);
+   
+    % Create a new column for CTD cast string and fill it with ctd_cast_str
+    ctd_cast_col = repmat({ctd_cast_str}, size(data, 1), 1);
 
-
-    disp(filename);
-    disp(ctd_cast_str);
-    
-    % Create a new column for CTD cast string and fill it with ctd_cast_str{1}
-    ctd_cast_col = repmat({ctd_cast_str{1}}, size(data, 1), 1);
-    
+      
     % Append CTD cast column to data cell array as first column
     data = [ctd_cast_col data];
     

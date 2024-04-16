@@ -60,6 +60,9 @@ function cruise_struct = adjust_salinity_profiles(cruise_struct, brob1,brob2,plo
             %If the bottle data is provided
             if exist('T','var')
                 CTD_num=str2double(currentSubStruct(end-2:end));
+                if isnan(CTD_num)
+                    CTD_num=str2double(currentSubStruct(end-1:end));
+                end
                 ind3=find(ismember(T.CTD,CTD_num));
 
                 scatter(T.AUTOSAL(ind3),T.PRESS(ind3),120,'filled','square','MarkerFaceColor',rgb('deepskyblue'),'MarkerEdgeColor','k')

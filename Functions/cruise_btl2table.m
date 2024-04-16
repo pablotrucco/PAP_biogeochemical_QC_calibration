@@ -61,8 +61,17 @@ for k = 1:length(fileNames)
     fclose(fid);
 
     % Extract CTD cast number from filename and create CTD cast string in CTD_XXX format
+    
     ctd_cast_str = regexp(filename, 'CTD_\d{3}', 'match');
     ctd_cast_str = strrep(ctd_cast_str, 'CTD', newTableName);
+
+    % Check if the result is empty
+    if isempty(ctd_cast_str)
+        % If the first attempt is empty, try matching with the pattern 'CTD\d{2}'
+        ctd_cast_str = regexp(filename, 'CTD\d{2}', 'match');
+        ctd_cast_str = strrep(ctd_cast_str, 'CTD', strcat(newTableName,'_'));
+    end
+
    
     % Create a new column for CTD cast string and fill it with ctd_cast_str
     ctd_cast_col = repmat({ctd_cast_str}, size(data, 1), 1);

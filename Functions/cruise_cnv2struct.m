@@ -87,8 +87,11 @@ for ii=1:length(subclassNames)
     % there is no secondary measurements, so the following conditionant has
     % been updated. This can be adapted for future version with similar
     % issues for other variables when you have the same problem.
-    if isfield(r, 'sbeox1MLL')
+    try
         evalin('base', [newStructName '.' subclassName '.CTDOXY_ml_L_2=r.sbeox1MLL;']);
+    catch
+
+    
     end
 
 

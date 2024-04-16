@@ -1,5 +1,7 @@
 %% First of all, this following line is just to set the correct path to 
-% the exampl data files in your computer.
+% the example data files in your computer.
+%Execute all this command lines from the location of this Example.m file is
+%located
 currentDir = pwd;
 
 %This second line will add all the subfolder below this Example.m to your
@@ -8,7 +10,7 @@ addpath(genpath(currentDir))
 
 %To run DY130 set cruise_opt to 1 for JC231 set cruise_opt to 2
 
-cruise_opt=1;
+cruise_opt=3;
 
 %==========================================================================
 %OUTSIDE OF MATLAB AND  PREVIOUS TO EXECUTE THE FUNCTIONS  
@@ -83,6 +85,7 @@ clearvars namesBefore varsAfter newNames newStructNames r
 %STAGE FIVE: Import .bl files from STAGE 2 into a table
 
 cruise_btl2table(filepath);
+
 
 varsAfter=whos;
 newTableNames=varsAfter(strcmp({varsAfter.class}, 'table'));
@@ -159,16 +162,44 @@ clearvars namesBefore varsAfter newNames ans
 %of this large outlier mentioned before. To do so you need to create the
 %same structure as above (outl) but with a logical value of 1 for the
 %position of the targeted outlier. It will be:
+if cruise_opt==1
+    outl=zeros(height(cross_match_table1),2,'logical');%Creates an array that say that there are not outliers
 
-outl=zeros(height(cross_match_table1),2,'logical');%Creates an array that say that there are not outliers
+
+    %Then we know from our tables that the CTD_4 at 13 dbar is in the row 29,
+    %so we set the 29 to logical 1 to count it as an outliers. You can do the
+    %same to all the data that you migth judge as outliers.
+    outl(29,:) = true;
+
+    [brob1,stats1,brob2,stats2,cross_match_table1,cross_match_table2] = evalin('base', ['crossMatchSal(''tables'', ' TableName1 ', ' TableName2 ', 1, outl );']);
+end
+
+%In the analysis of DY103, a similar pattern of outliers is observable, specifically 
+%for CTD_2 at depths of 858, 504, and 201 dbar. These anomalies are noticeable both 
+%graphically and within the data tables, with the problematic data points located 
+%at indexes 10, 11, and 12 of the table. To address these outliers while minimizing 
+%data loss, a selective flagging approach is recommended, similar to the process 
+%outlined for DY130. This approach involves identifying outliers with logical indexes 
+%in the resulting tables (Outlier_1 and Outlier_2 columns). Instead of excluding 
+%a broad range of data points based on these indexes, we will target only the 
+%specific outliers mentioned. For cruise DY103 (cruise_opt==3), the process is as follows:
+
+if cruise_opt==3
+    % Initialize an array indicating no outliers by default
+    outl=zeros(height(cross_match_table1), 2, 'logical');
+
+    % Specific outliers for DY103's CTD_2 at the given depths are at table indexes 10, 11, and 12.
+    % These are flagged as true to identify them as outliers.
+    outl([10, 11, 12], :) = true;
+
+    % Re-run the cross-matching function, excluding the identified outliers.
+    % The function 'crossMatchSal' is called with the updated 'outl' to exclude
+    % the targeted outliers and re-calculate the statistics without them.
+    [brob1, stats1, brob2, stats2, cross_match_table1, cross_match_table2] = ...
+        evalin('base', ['crossMatchSal(''tables'', ' TableName1 ', ' TableName2 ', 1, outl );']);
+end
 
 
-%Then we know from our tables that the CTD_4 at 13 dbar is in the row 29,
-%so we set the 29 to logical 1 to count it as an outliers. You can do the
-%same to all the data that you migth judge as outliers.
-outl(29,:) = true;
-
-[brob1,stats1,brob2,stats2,cross_match_table1,cross_match_table2] = evalin('base', ['crossMatchSal(''tables'', ' TableName1 ', ' TableName2 ', 1, outl );']);
 
 %--------------------------------8-----------------------------------------
 %STAGE EIGHT: Finally we use the coeficient from the previous stage to
@@ -214,6 +245,12 @@ end
 if cruise_opt==2
     workbookFile2=fullfile(currentDir,'Data_example/JC231/Bottle_oxygen/metadata_submission_templates_2022_bottle oxygen_JC231.xlsx');
 end
+
+if cruise_opt==3
+    workbookFile2=fullfile(currentDir,'/Data_example/DY103/Bottle_oxygen/metadata_submission_templates_2019_bottle oxygen_DY103.xlsx');
+
+end
+
 namesBefore=whos;
 
 import_O2_winkler(workbookFile2);
